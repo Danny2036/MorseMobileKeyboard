@@ -5,7 +5,6 @@ package com.example.danny.morsekeyboard;
  */
 public class MorseMaker {
     private String currentLetter = "";
-    private static Long dotTime = 300l;
     private static final String dot = ".";
     private static final String dash = "-";
     private static Converter converter = new Converter();
@@ -31,7 +30,7 @@ public class MorseMaker {
      * @param elapsedTime The amount of time the user pressed a key
      * @return A dot or dash
      */
-    public static String getDotOrDash(long elapsedTime){
+    public static String getDotOrDash(long dotTime, long elapsedTime){
         if(elapsedTime<3*dotTime){
             return dot;
         } else {

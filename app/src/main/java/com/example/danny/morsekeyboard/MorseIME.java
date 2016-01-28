@@ -10,13 +10,14 @@ import android.view.inputmethod.InputConnection;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class MorseIME extends InputMethodService implements KeyboardView.OnKeyboardActionListener{
     private boolean caps = false;
     private boolean capsLock = false;
 
     private long elementTimer = 0l;
-    private long dotTime = 333l;
+    private long dotTime = 200l;
     private static Timer spaceTimer = new Timer();
     private static Timer charTimer = new Timer();
     private static String currentCode = "";
@@ -58,8 +59,8 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         MorseIME.spaceTimer.cancel();
         MorseIME.charTimer.cancel();
         InputConnection connection = getCurrentInputConnection();
-        Long elapsedTime = System.nanoTime()-this.elementTimer;
-        currentCode += MorseMaker.getDotOrDash(elapsedTime);
+        Long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.elementTimer);
+        currentCode += MorseMaker.getDotOrDash(dotTime, elapsedTime);
         createCharTimer(connection);
         createSpaceTimer(connection);
     }
@@ -86,7 +87,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     public void swipeLeft() {
         //Try to erase all to till the last space on a double swipe
         InputConnection connection = getCurrentInputConnection();
-        connection.deleteSurroundingText(1,0);
+        connection.deleteSurroundingText(1, 0);
 
     }
 
@@ -97,26 +98,6 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     public void swipeRight() {
         InputConnection connection = getCurrentInputConnection();
         connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-    }
-
-    /**
-     * Adds spaces to textfield
-     */
-    private void addSpace(InputConnection connection){
-        connection.commitText(String.valueOf(" "), 1);
-    }
-
-    /**
-     * Adds char represented by currentCode to textfield
-     * @param connection The connection that is attached to the textfield
-     */
-    private void addChar(InputConnection connection){
-        String conversion = MorseMaker.getCharacter(MorseIME.currentCode);
-        if (caps){
-            conversion = conversion.toUpperCase();
-        }
-        connection.commitText(String.valueOf(conversion), 1);
-        MorseIME.currentCode = "";
     }
 
     /**
@@ -147,6 +128,35 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
                 addChar(connection);
             }
         }, 3 * dotTime);
+    }
+
+    /**
+     * Adds spaces to textfield
+     */
+    private void addSpace(InputConnection connection){
+        connection.commitText(String.valueOf(" "), 1);
+    }
+
+    /**
+     * Adds char represented by currentCode to textfield
+     * @param connection The connection that is attached to the textfield
+     */
+    private void addChar(InputConnection connection){
+        String conversion = MorseMaker.getCharacter(MorseIME.currentCode);
+        if (caps){
+            conversion = conversion.toUpperCase();
+        }
+        connection.commitText(String.valueOf(conversion), 1);
+        MorseIME.currentCode = "";
+    }
+
+    /**
+     * Converts nano seconds to milliseconds
+     * @param timeInNano Time in nanoseconds
+     * @return Equivalent time in milliseconds
+     */
+    private long nanoToMilli(Long timeInNano){
+        return timeInNano/(10^6);
     }
 
     @Override
