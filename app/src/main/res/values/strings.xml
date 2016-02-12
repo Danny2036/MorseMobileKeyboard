@@ -1,7 +1,5 @@
 <resources>
-    <string name="Simple_app_name">SimpleKeyboard</string>
     <string name="app_name">Morse Mobile</string>
-    <string name="simple_ime">Simple IME</string>
     <string name="subtype_en_US">English (US)</string>
     <string name="morse_ime">Morse IME</string>
     <string name="subtype_Morse_Code">Morse Code</string>

@@ -6,4 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_alignParentBottom="true"
     android:keyPreviewLayout="@layout/preview"
+    android:keyTextColor = "@android:color/holo_blue_bright"
+    android:keyTextSize="100sp"
+    android:labelTextSize="100sp"
     />

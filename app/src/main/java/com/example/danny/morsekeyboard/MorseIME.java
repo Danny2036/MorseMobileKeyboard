@@ -13,6 +13,8 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class MorseIME extends InputMethodService implements KeyboardView.OnKeyboardActionListener{
+    private KeyboardView keyboardView;
+
     private boolean caps = false;
     private boolean capsLock = false;
 
@@ -32,10 +34,11 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     @SuppressLint("InflateParams")
     @Override
     public View onCreateInputView(){
-        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
+        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
         Keyboard keyboard = new Keyboard(this, R.xml.morsekey);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
+        //keyboardView.getKeyboard().getKeys().get(0).
         return keyboardView;
     }
 
@@ -59,8 +62,20 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         MorseIME.spaceTimer.cancel();
         MorseIME.charTimer.cancel();
         InputConnection connection = getCurrentInputConnection();
+        //connection.commitText("apple", 1);
         Long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.elementTimer);
         currentCode += MorseMaker.getDotOrDash(dotTime, elapsedTime);
+        keyboardView.getKeyboard().getKeys().get(0).label = currentCode;
+        /*List<Keyboard.Key> keyList = keyboardView.getKeyboard().getKeys();
+        if(keyList.isEmpty()){
+            connection.commitText("apple", 1);
+        } else {
+            connection.commitText("orange", 1);
+
+        }
+        key.label = (CharSequence)currentCode;
+        */
+
         createCharTimer(connection);
         createSpaceTimer(connection);
     }
@@ -103,7 +118,6 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     /**
      * Creates a timer that waits 7*dotTime before adding a space
      * @param connection The connection the space is added too
-     * @return A timer that waits to add a space
      */
     private void createSpaceTimer(final InputConnection connection){
         MorseIME.spaceTimer = new Timer();
@@ -111,6 +125,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
             @Override
             public void run() {
                 addSpace(connection);
+                //keyboardView.getKeyboard().getKeys().get(0).label = "";
             }
         }, 7 * dotTime);
     }
@@ -118,7 +133,6 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     /**
      * Creates a timer based on 3*dotTime to add a char
      * @param connection The connection attached to a textfield
-     * @return A timer that waits to add a space
      */
     private void createCharTimer(final InputConnection connection){
         MorseIME.charTimer = new Timer();
@@ -141,22 +155,13 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      * Adds char represented by currentCode to textfield
      * @param connection The connection that is attached to the textfield
      */
-    private void addChar(InputConnection connection){
+    private void addChar(InputConnection connection) {
         String conversion = MorseMaker.getCharacter(MorseIME.currentCode);
-        if (caps){
+        if (caps) {
             conversion = conversion.toUpperCase();
         }
         connection.commitText(String.valueOf(conversion), 1);
         MorseIME.currentCode = "";
-    }
-
-    /**
-     * Converts nano seconds to milliseconds
-     * @param timeInNano Time in nanoseconds
-     * @return Equivalent time in milliseconds
-     */
-    private long nanoToMilli(Long timeInNano){
-        return timeInNano/(10^6);
     }
 
     @Override

@@ -2,12 +2,13 @@
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
     android:keyWidth="100%p"
     android:horizontalGap="0px"
+    android:labelTextSize="250px"
     android:verticalGap="0px"
     android:keyHeight="300dp"
-    >
+    android:keyTextSize = "20sp">
     <Row>
         <Key
             android:codes="2036"
-            android:keyLabel=".-" />
+            android:keyLabel=".-"/>
     </Row>
 </Keyboard>
