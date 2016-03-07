@@ -38,7 +38,6 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         Keyboard keyboard = new Keyboard(this, R.xml.morsekey);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
-        //keyboardView.getKeyboard().getKeys().get(0).
         return keyboardView;
     }
 
@@ -62,21 +61,10 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         MorseIME.spaceTimer.cancel();
         MorseIME.charTimer.cancel();
         InputConnection connection = getCurrentInputConnection();
-        //connection.commitText("apple", 1);
         Long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.elementTimer);
         currentCode += MorseMaker.getDotOrDash(dotTime, elapsedTime);
-        keyboardView.getKeyboard().getKeys().get(0).label = currentCode;
-        /*List<Keyboard.Key> keyList = keyboardView.getKeyboard().getKeys();
-        if(keyList.isEmpty()){
-            connection.commitText("apple", 1);
-        } else {
-            connection.commitText("orange", 1);
-
-        }
-        key.label = (CharSequence)currentCode;
-        */
-
-        createCharTimer(connection);
+        //setKeyText(this.getCharacter() + "\n" + currentCode, keyboardView);
+        createCharTimer(connection, keyboardView);
         createSpaceTimer(connection);
     }
 
@@ -125,7 +113,6 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
             @Override
             public void run() {
                 addSpace(connection);
-                //keyboardView.getKeyboard().getKeys().get(0).label = "";
             }
         }, 7 * dotTime);
     }
@@ -134,12 +121,13 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      * Creates a timer based on 3*dotTime to add a char
      * @param connection The connection attached to a textfield
      */
-    private void createCharTimer(final InputConnection connection){
+    private void createCharTimer(final InputConnection connection, final KeyboardView keyboardView){
+        setKeyText(this.getCharacter() + "\n" + currentCode, keyboardView);
         MorseIME.charTimer = new Timer();
         MorseIME.charTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                addChar(connection);
+                addChar(connection, keyboardView);
             }
         }, 3 * dotTime);
     }
@@ -155,13 +143,39 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      * Adds char represented by currentCode to textfield
      * @param connection The connection that is attached to the textfield
      */
-    private void addChar(InputConnection connection) {
+    private void addChar(InputConnection connection, KeyboardView keyboardView) {
+        String conversion = this.getCharacter();
+        connection.commitText(String.valueOf(conversion), 1);
+        MorseIME.currentCode = "";
+        clearKey(keyboardView);
+    }
+
+    /**
+     * Clears text on keyboard key
+     * @param keyboardView The keyboardView that contains the key
+     */
+    private void clearKey(KeyboardView keyboardView){
+        setKeyText("", keyboardView);
+    }
+
+    /**
+     * Gets character based off of code and caps
+     * @return The proper character
+     */
+    private String getCharacter(){
         String conversion = MorseMaker.getCharacter(MorseIME.currentCode);
         if (caps) {
             conversion = conversion.toUpperCase();
         }
-        connection.commitText(String.valueOf(conversion), 1);
-        MorseIME.currentCode = "";
+        return conversion;
+    }
+
+    /**
+     * Sets the key text to the value of the input
+     * @param keyText Text to change the key to
+     */
+    public void setKeyText(String keyText, KeyboardView keyboardView){
+        keyboardView.getKeyboard().getKeys().get(0).label = keyText;
     }
 
     @Override
