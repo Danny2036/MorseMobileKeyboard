@@ -8,6 +8,7 @@ public class MorseMaker {
     private static final String dot = ".";
     private static final String dash = "-";
     private static Converter converter = new Converter();
+    public static final String emptyCodeValue = "Menu";
 
     /**
      * Gets character based off of code entered
@@ -18,7 +19,7 @@ public class MorseMaker {
         String convertedLetter = converter.getLetter(curretCode);
         String returnValue = "";
         if(convertedLetter == null){
-            //Do nothing
+            returnValue = emptyCodeValue;
          } else {
             returnValue = convertedLetter;
         }

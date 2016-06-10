@@ -23,6 +23,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     private static Timer spaceTimer = new Timer();
     private static Timer charTimer = new Timer();
     private static String currentCode = "";
+    private final String menuText = "Apple";
 
 
     //Add tone
@@ -63,7 +64,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         InputConnection connection = getCurrentInputConnection();
         Long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.elementTimer);
         currentCode += MorseMaker.getDotOrDash(dotTime, elapsedTime);
-        //setKeyText(this.getCharacter() + "\n" + currentCode, keyboardView);
+        setKeyText(this.getCharacter() + "\n" + currentCode, keyboardView);
         createCharTimer(connection, keyboardView);
         createSpaceTimer(connection);
     }
@@ -122,7 +123,6 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      * @param connection The connection attached to a textfield
      */
     private void createCharTimer(final InputConnection connection, final KeyboardView keyboardView){
-        setKeyText(this.getCharacter() + "\n" + currentCode, keyboardView);
         MorseIME.charTimer = new Timer();
         MorseIME.charTimer.schedule(new TimerTask() {
             @Override
@@ -145,7 +145,9 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      */
     private void addChar(InputConnection connection, KeyboardView keyboardView) {
         String conversion = this.getCharacter();
-        connection.commitText(String.valueOf(conversion), 1);
+        if(!conversion.equals(menuText)) {
+            connection.commitText(conversion, 1);
+        }
         MorseIME.currentCode = "";
         clearKey(keyboardView);
     }
@@ -163,10 +165,17 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      * @return The proper character
      */
     private String getCharacter(){
-        String conversion = MorseMaker.getCharacter(MorseIME.currentCode);
-        if (caps) {
-            conversion = conversion.toUpperCase();
+        String conversion;
+        conversion = MorseMaker.getCharacter(MorseIME.currentCode);
+
+        if(conversion != null) {
+            if (caps) {
+                conversion = conversion.toUpperCase();
+            }
+        } else {
+            conversion = menuText;
         }
+
         return conversion;
     }
 

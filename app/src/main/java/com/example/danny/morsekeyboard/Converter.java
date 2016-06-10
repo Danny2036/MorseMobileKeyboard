@@ -71,11 +71,7 @@ public class Converter {
     }
 
     public String getLetter(String key){
-        try{
-            return mappedStrings.get(key).getLetter();
-        } catch (Exception e){
-            return null;
-        }
+        return mappedStrings.get(key).getLetter();
     }
 }
 
