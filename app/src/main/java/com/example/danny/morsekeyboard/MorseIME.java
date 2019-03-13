@@ -13,15 +13,18 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class MorseIME extends InputMethodService implements KeyboardView.OnKeyboardActionListener{
+    private Keyboard keyboard;
     private boolean caps = false;
     private boolean capsLock = false;
+    private String currentCode = "";
 
     private long elementTimer = 0l;
-    private long dotTime = 200l;
+    private final long dotTime = 200l;
+    private static final int charMultiplier = 3;
+    private static final int spaceMultiplier = 7;
+    private static final String spaceText = " ";
     private static Timer spaceTimer = new Timer();
     private static Timer charTimer = new Timer();
-    private static String currentCode = "";
-
 
     //Add tone
 
@@ -33,7 +36,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
     @Override
     public View onCreateInputView(){
         KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
-        Keyboard keyboard = new Keyboard(this, R.xml.morsekey);
+        keyboard = new Keyboard(this, R.xml.morsekey);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
         return keyboardView;
@@ -61,6 +64,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         InputConnection connection = getCurrentInputConnection();
         Long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - this.elementTimer);
         currentCode += MorseMaker.getDotOrDash(dotTime, elapsedTime);
+        setKeyboardLabelText(currentCode);
         createCharTimer(connection);
         createSpaceTimer(connection);
     }
@@ -70,9 +74,9 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      */
     @Override
     public void swipeUp() {
-        if(this.capsLock){
-            this.caps = false;
-            this.capsLock = false;
+        if(capsLock){
+            caps = false;
+            capsLock = false;
         } else if(caps){
             capsLock = true;
         } else {
@@ -100,6 +104,14 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
         connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
     }
 
+    private void setKeyboardLabelText(String currentCode){
+        Keyboard.Key key = keyboard.getKeys().get(0);
+        StringBuilder builder = new StringBuilder(MorseMaker.getCharacter(currentCode));
+        builder.append("\n");
+        builder.append(currentCode);
+        key.label = builder.toString();
+    }
+
     /**
      * Creates a timer that waits 7*dotTime before adding a space
      * @param connection The connection the space is added too
@@ -112,7 +124,7 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
             public void run() {
                 addSpace(connection);
             }
-        }, 7 * dotTime);
+        }, spaceMultiplier * dotTime);
     }
 
     /**
@@ -127,14 +139,14 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
             public void run() {
                 addChar(connection);
             }
-        }, 3 * dotTime);
+        }, charMultiplier * dotTime);
     }
 
     /**
      * Adds spaces to textfield
      */
     private void addSpace(InputConnection connection){
-        connection.commitText(String.valueOf(" "), 1);
+        connection.commitText(String.valueOf(spaceText), 1);
     }
 
     /**
@@ -142,12 +154,12 @@ public class MorseIME extends InputMethodService implements KeyboardView.OnKeybo
      * @param connection The connection that is attached to the textfield
      */
     private void addChar(InputConnection connection){
-        String conversion = MorseMaker.getCharacter(MorseIME.currentCode);
+        String conversion = MorseMaker.getCharacter(currentCode);
         if (caps){
             conversion = conversion.toUpperCase();
         }
         connection.commitText(String.valueOf(conversion), 1);
-        MorseIME.currentCode = "";
+        currentCode = "";
     }
 
     /**

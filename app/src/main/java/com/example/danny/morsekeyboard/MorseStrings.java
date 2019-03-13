@@ -3,26 +3,27 @@ package com.example.danny.morsekeyboard;
 /**
  * Created by Danny on 1/6/2016.
  */
-public class MorseStrings {
+class MorseString {
     private String letter;
     private String code;
+    private final String undefinedText = "undefined";
 
-    /*
+    /**
      * Constructor
      * Creates object if inputs are not specified
      */
-    public MorseStrings(){
-        this.letter = "undefined";
-        this.code = "undefinded";
+    public MorseString(){
+        this.letter = undefinedText;
+        this.code = undefinedText;
     }
 
-    /*
+    /**
      * Constructor
      * @param key: reference number
      * @param letter: the letter this object represents
      * @param code: the morse code that maps to the letter
      */
-    public MorseStrings(String letter, String code){
+    MorseString(String letter, String code){
         this.letter = letter;
         this.code = code;
     }
