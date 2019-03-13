@@ -8,6 +8,7 @@
     <Row>
         <Key
             android:codes="2036"
-            android:keyLabel=".-" />
+            android:keyLabel=".-"
+            />
     </Row>
 </Keyboard>
